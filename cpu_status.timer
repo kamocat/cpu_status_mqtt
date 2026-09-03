@@ -1,0 +1,9 @@
+[Unit]
+Description=Publish CPU stats
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1min
+
+[Install]
+WantedBy=timers.target

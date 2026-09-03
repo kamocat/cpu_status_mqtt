@@ -1,0 +1,12 @@
+[Unit]
+Description=Publishes CPU stats
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+Type=oneshot
+user=marshal
+WorkingDirectory=/home/marshal/Documents/cpu_status/
+ExecStart=perl /home/marshal/Documents/cpu_status/cmd.pl
+
+
