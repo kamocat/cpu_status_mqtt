@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use JSON::PP;
 
-# Load MQTT credentials from environment file (simple KEY=VALUE format)
+# Load MQTT credentials from environment file
 my $env_file = 'mqtt.env';
 if (-f $env_file) {
     open my $fh, '<', $env_file or die "Cannot open $env_file: $!";
@@ -15,6 +15,9 @@ if (-f $env_file) {
     }
     close $fh;
 }
+
+# Load state_topic from discovery.json
+my $topic = get_topic_from_discovery();
 
 my %data;
 
@@ -43,19 +46,36 @@ my $json = JSON::PP->new->canonical->encode(\%data);
 my $mqtt_addr = $ENV{MQTT_ADDR} || 'localhost';
 my $mqtt_user = $ENV{MQTT_USER} || '';
 my $mqtt_pass = $ENV{MQTT_PASS} || '';
-my $topic = 'homeassistant/server/status';
 
-# Use a pipe to safely pass JSON to mosquitto_pub
-my $cmd;
-if ($mqtt_user && $mqtt_pass) {
-    $cmd = "mosquitto_pub -h '$mqtt_addr' -u '$mqtt_user' -P '$mqtt_pass' -t '$topic' -l";
-} else {
-    $cmd = "mosquitto_pub -h '$mqtt_addr' -t '$topic' -l";
+# Write JSON to temp file and publish
+my $temp_file = '/tmp/mqtt_status.json';
+open my $fh, '>', $temp_file or die "Cannot write temp file: $!";
+print $fh $json;
+close $fh;
+
+my @cmd = ('mosquitto_pub', '-h', $mqtt_addr, '-t', $topic, '-f', $temp_file);
+push @cmd, '-u', $mqtt_user, '-P', $mqtt_pass if $mqtt_user && $mqtt_pass;
+
+system(@cmd);
+unlink $temp_file;
+
+sub get_topic_from_discovery {
+    my $discovery_file = 'discovery.json';
+    die "discovery.json not found. Run generate_discovery.pl first.\n" unless -f $discovery_file;
+    
+    open my $fh, '<', $discovery_file or die "Cannot open discovery.json: $!";
+    my $discovery = JSON::PP->new->decode(do { local $/; <$fh> });
+    close $fh;
+    
+    # Get state_topic from first sensor in cmps
+    if (my $cmps = $discovery->{cmps}) {
+        for my $sensor_id (keys %$cmps) {
+            return $cmps->{$sensor_id}{state_topic} if $cmps->{$sensor_id}{state_topic};
+        }
+    }
+    
+    die "No state_topic found in discovery.json\n";
 }
-
-open my $pub, '|-', $cmd or die "Cannot open mosquitto_pub: $!";
-print $pub $json;
-close $pub;
 
 sub get_temperature {
     my @temps;
