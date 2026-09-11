@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+use builtin qw(trim);
 use strict;
 use warnings;
 use JSON::PP;
@@ -169,7 +170,7 @@ sub get_disk_stats {
     # Skip header, parse data line
     my @lines = split /\n/, $output;
     if (@lines > 1) {
-        my $data_line = $lines[1];
+        my $data_line = trim($lines[1]);
         my @fields = split /\s+/, $data_line;
         if (@fields >= 2) {
             # First field is available (may include unit like 171G), second is use%
