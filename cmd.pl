@@ -103,7 +103,7 @@ sub get_temperature {
 }
 
 sub get_frequency {
-    my $freq_file = '/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq';
+    my $freq_file = '/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_avg_freq';
     return unless -f $freq_file;
     
     open my $fh, '<', $freq_file or return;
