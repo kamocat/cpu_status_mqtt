@@ -141,7 +141,7 @@ my $mqtt_pass = $ENV{MQTT_PASS} || '';
 
 my $topic = "homeassistant/device/$hostname/config";
 
-my @cmd = ('mosquitto_pub', '-h', $mqtt_addr, '-t', $topic, '-f', 'discovery.json');
+my @cmd = ('mosquitto_pub', '-r', '-h', $mqtt_addr, '-t', $topic, '-f', 'discovery.json');
 push @cmd, '-u', $mqtt_user, '-P', $mqtt_pass if $mqtt_user && $mqtt_pass;
 
 system(@cmd);
