@@ -48,31 +48,25 @@ my @sensors = (
     {
         id => 'mem_use',
         name => 'Memory Used',
-        unit => 'kB',
+        unit => 'MB',
         field => 'mem_use',
     },
     {
         id => 'mem_free',
         name => 'Memory Free',
-        unit => 'kB',
+        unit => 'MB',
         field => 'mem_free',
-    },
-    {
-        id => 'cache_use',
-        name => 'Cache Used',
-        unit => 'kB',
-        field => 'cache_use',
     },
     {
         id => 'swap_use',
         name => 'Swap Used',
-        unit => 'kB',
+        unit => 'MB',
         field => 'swap_use',
     },
     {
         id => 'disk_available',
         name => 'Disk Available',
-        unit => 'kB',
+        unit => 'MB',
         field => 'disk_available',
     },
     {

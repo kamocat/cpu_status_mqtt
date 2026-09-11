@@ -115,21 +115,27 @@ sub get_frequency {
 }
 
 sub get_memory {
-    my $output = `free -L`;
+    my $output = `free -wm`;
     
     my %memory;
     # Parse line with SwapUse, CachUse, MemUse, MemFree
     foreach my $line (split /\n/, $output) {
         my @fields = split /\s+/, $line;
         # Look for line starting with "SwapUse"
-        if (@fields >= 8 && $fields[0] eq 'SwapUse') {
-            $memory{swap_use} = $fields[1] + 0;
-            # fields[2] = 'CachUse'
-            $memory{cache_use} = $fields[3] + 0;
-            # fields[4] = 'MemUse'
-            $memory{mem_use} = $fields[5] + 0;
-            # fields[6] = 'MemFree'
-            $memory{mem_free} = $fields[7] + 0;
+        if (@fields >= 8 && $fields[0] eq 'Mem:') {
+            # fields[1] is total
+            $memory{mem_use} = $fields[2];
+            # fields[3] is free
+            # fields[4] is shared
+            # fields[5] is buffers
+            # fields[6] is cache
+            # fields[7] is available, which is how much we can actually allocate
+            $memory{mem_free} = $fields[7];
+        }
+        if (@fields >= 3 && $fields[0] eq 'Swap:') {
+            # fields[1] is total
+            $memory{swap_use} = $fields[2];
+            # fields[3] is free
             last;
         }
     }
@@ -157,7 +163,7 @@ sub get_cpu_stats {
 }
 
 sub get_disk_stats {
-    my $output = `df -text4 --output=avail,pcent`;
+    my $output = `df -m -text4 --output=avail,pcent`;
     
     my %disk;
     # Skip header, parse data line
